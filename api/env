@@ -1,3 +1,0 @@
-# Ensure there are NO spaces around the =
-DATABASE_URI="postgresql://postgres.ucemjncexxapsyeiuyxv:garv_phishing-sentinel@aws-1-ap-south-1.pooler.supabase.com:5432/postgres"
-JWT_SECRET=some_long_random_string_123456
