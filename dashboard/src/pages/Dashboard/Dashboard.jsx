@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, CheckCircle, Activity, Globe, Lock, LogOut, RefreshCw } from 'lucide-react';
 import './Dashboard.css';
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "https://phishing-sentinel.onrender.com";
 
 function Dashboard() {
   const [stats, setStats] = useState({ scanned: 0, threatsBlocked: 0, trustScore: 100 });
