@@ -6,6 +6,8 @@ import joblib
 import pandas as pd
 import tempfile
 import os
+import time
+from datetime import datetime
 from preprocess import extract_url_features, extract_dom_features
 
 app = FastAPI(title="Phishing Sentinel API V2")
@@ -19,11 +21,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load the NEW v2 model on startup
-print("Loading Phishing Sentinel V2 model...")
-# Make sure the filename matches what you downloaded from Drive!
-model = joblib.load('../models/phishing_sentinel_model_v2.pkl')
-print("Model loaded successfully!")
+# --- MODEL LOADING LOGIC (Fixed for Render) ---
+# This ensures the model is found regardless of where the script is called from
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Moves up one level from 'src' then into 'models'
+MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'phishing_sentinel_model_v2.pkl')
+
+print(f"Loading Phishing Sentinel V2 model from: {MODEL_PATH}")
+
+try:
+    model = joblib.load(MODEL_PATH)
+    print("Model loaded successfully!")
+except FileNotFoundError:
+    print(f"ERROR: Model file not found at {MODEL_PATH}")
+    # Fallback for different directory structures during local testing
+    model = None 
+# ----------------------------------------------
 
 class AnalyzePayload(BaseModel):
     url: str
@@ -39,6 +52,9 @@ def health_check():
 
 @app.post("/analyze")
 async def analyze_page(payload: AnalyzePayload):
+    if model is None:
+        raise HTTPException(status_code=500, detail="Model not loaded on server")
+        
     if not payload.url or not payload.html:
         raise HTTPException(status_code=400, detail="Missing URL or HTML content")
         
@@ -81,4 +97,7 @@ async def analyze_page(payload: AnalyzePayload):
     }
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=10000, reload=True)
+    # Use Render's PORT environment variable
+    port = int(os.environ.get("PORT", 10000))
+    # 'main' refers to this filename (main.py)
+    uvicorn.run(app, host="0.0.0.0", port=port)
