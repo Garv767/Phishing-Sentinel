@@ -29,6 +29,14 @@ class AnalyzePayload(BaseModel):
     url: str
     html: str
 
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "unix_time": time.time()
+    }
+
 @app.post("/analyze")
 async def analyze_page(payload: AnalyzePayload):
     if not payload.url or not payload.html:
@@ -73,4 +81,4 @@ async def analyze_page(payload: AnalyzePayload):
     }
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=10000, reload=True)
