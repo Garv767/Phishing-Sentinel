@@ -8,7 +8,7 @@ import tempfile
 import os
 from preprocess import extract_url_features, extract_dom_features
 
-app = FastAPI(title="Phishing Sentinel API")
+app = FastAPI(title="Phishing Sentinel API V2")
 
 # Allow your browser extension to communicate with this API
 app.add_middleware(
@@ -19,12 +19,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load the model on startup
-print("Loading Phishing Sentinel model...")
-model = joblib.load('../models/phishing_sentinel_model.pkl')
+# Load the NEW v2 model on startup
+print("Loading Phishing Sentinel V2 model...")
+# Make sure the filename matches what you downloaded from Drive!
+model = joblib.load('../models/phishing_sentinel_model_v2.pkl')
 print("Model loaded successfully!")
 
-# Define the expected JSON payload
 class AnalyzePayload(BaseModel):
     url: str
     html: str
@@ -37,10 +37,10 @@ async def analyze_page(payload: AnalyzePayload):
     url = payload.url
     html_content = payload.html
     
-    # 1. Extract URL features
+    # 1. Extract the upgraded URL features
     url_feats = extract_url_features(url)
     
-    # 2. Extract DOM features
+    # 2. Extract the upgraded DOM features
     with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_file:
         temp_file.write(html_content)
         temp_path = temp_file.name
@@ -48,12 +48,14 @@ async def analyze_page(payload: AnalyzePayload):
     dom_feats = extract_dom_features(temp_path, url)
     os.remove(temp_path) 
     
-    # 3. Combine and format
+    # 3. Combine and format matching the exact v2 training sequence
     combined_features = {**url_feats, **dom_feats}
     
     feature_order = [
         'url_length', 'has_ip', 'has_at_symbol', 'num_hyphens', 'num_subdomains',
-        'has_password_field', 'has_hidden_iframe', 'suspicious_form_action', 'script_to_content_ratio'
+        'url_entropy', 'num_digits', 'num_parameters', 'has_sensitive_words',
+        'has_password_field', 'has_hidden_iframe', 'suspicious_form_action', 
+        'script_to_content_ratio', 'external_link_ratio', 'empty_links_ratio', 'num_input_fields'
     ]
     
     df_features = pd.DataFrame([combined_features], columns=feature_order)
@@ -71,5 +73,4 @@ async def analyze_page(payload: AnalyzePayload):
     }
 
 if __name__ == "__main__":
-    # Binds to 0.0.0.0:8000
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
