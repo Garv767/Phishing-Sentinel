@@ -1,4 +1,4 @@
-const API_ENDPOINT = 'http://127.0.0.1:8080/api/analyze';
+const API_ENDPOINT = 'http://phishing-sentinel.onrender.com/api/analyze';
 
 // 1. Listen for Token Sync from Dashboard (External)
 chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
