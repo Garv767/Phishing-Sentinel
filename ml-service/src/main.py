@@ -88,8 +88,10 @@ async def analyze_page(payload: AnalyzePayload):
     prediction = model.predict(df_features)[0]
     probability = model.predict_proba(df_features)[0][1] 
     
-    result = "Phishing" if prediction == 1 else "Legitimate"
-    
+    # Custom threshold: Only mark as Phishing if probability > 0.70
+    threshold = 0.70
+    result = "Phishing" if probability >= threshold else "Legitimate"
+        
     return {
         "verdict": result,
         "phishing_probability": round(probability * 100, 2),
