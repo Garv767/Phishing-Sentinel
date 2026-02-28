@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, CheckCircle, Activity, Globe, Lock, LogOut, RefreshCw } from 'lucide-react';
 import './Dashboard.css';
 
-const API_BASE = "https://phishing-sentinel.onrender.com";
+const API_BASE = import.meta.env.VITE_API_URL;//"https://phishing-sentinel.onrender.com";
 const SENTINEL_EXT_ID = "jlhddlkhohfggefbglbheonnaclgipei";// "YOUR_EXTENSION_ID_HERE"; 
 
 
