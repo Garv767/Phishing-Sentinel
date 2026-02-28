@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080";
+const API_BASE = "https://phishing-sentinel.onrender.com";
 
 async function updatePopupStats() {
   const tokenObj = await chrome.storage.local.get(['sentinel_token']);
@@ -19,7 +19,7 @@ async function updatePopupStats() {
     const data = await response.json();
     
     scannedEl.textContent = data.scanned.toLocaleString();
-    trustEl.textContent = `${data.trustScore}%`;
+    trustEl.textContent = `${data.trustScore.toFixed(2)}%`;
     statusEl.textContent = "Live";
     statusEl.style.background = "#064e3b";
     statusEl.style.color = "#4ade80";

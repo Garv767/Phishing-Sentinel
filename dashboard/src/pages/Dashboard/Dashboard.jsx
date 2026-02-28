@@ -4,6 +4,8 @@ import { AlertTriangle, CheckCircle, Activity, Globe, Lock, LogOut, RefreshCw } 
 import './Dashboard.css';
 
 const API_BASE = "https://phishing-sentinel.onrender.com";
+const SENTINEL_EXT_ID = "jlhddlkhohfggefbglbheonnaclgipei";// "YOUR_EXTENSION_ID_HERE"; 
+
 
 function Dashboard() {
   const [stats, setStats] = useState({ scanned: 0, threatsBlocked: 0, trustScore: 100 });
@@ -12,8 +14,24 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+   const handleLogout = () => {
+    // Clear token from localStorage
     localStorage.removeItem('sentinel_token');
+    
+    // Send logout message to extension
+    if (window.chrome && chrome.runtime) {
+      chrome.runtime.sendMessage(SENTINEL_EXT_ID, {
+        type: "LOGOUT"
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.warn("Extension not found or not linked.");
+        } else {
+          console.log("Logout message sent to extension successfully.");
+        }
+      });
+    }
+    
+    // Navigate to login page
     navigate('/login');
   };
 

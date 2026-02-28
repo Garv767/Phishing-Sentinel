@@ -7,7 +7,16 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
             console.log("[Sentinel] Token synced from Dashboard");
             sendResponse({ success: true });
         });
-        return true; 
+        return true; // Keep channel open for the async storage callback
+    }
+
+    // Handle logout from dashboard
+    if (request.type === "LOGOUT") {
+        chrome.storage.local.remove('sentinel_token', () => {
+            console.log("[Sentinel] Token cleared from extension storage");
+            sendResponse({ success: true });
+        });
+        return true; // Keep channel open for the async storage callback
     }
 });
 
