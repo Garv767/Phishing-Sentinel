@@ -10,7 +10,7 @@ async function updatePopupStats() {
 
   try {
     const response = await fetch(`${API_BASE}/api/stats`, {
-        headers: {
+        headers: {  
             'Authorization': `Bearer ${token}` // ✅ Added JWT
         }
     });

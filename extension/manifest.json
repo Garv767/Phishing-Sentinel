@@ -13,13 +13,14 @@
     "https://*/*",
     "http://127.0.0.1:8080/*",
     "http://phishing-sentinel.onrender.com/*",
+    "https://phishing-sentinel.netlify.app/*",
     "http://localhost:8080/*"
   ],
   "action": {
     "default_popup": "src/popup/index.html"
   },
   "externally_connectable": {
-    "matches": ["http://localhost:5173/*"]
+    "matches": ["https://phishing-sentinel.netlify.app/*"]
   },
   "background": {
     "service_worker": "src/background/index.js",

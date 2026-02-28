@@ -26,7 +26,7 @@ async function performSecurityScan() {
     chrome.runtime.sendMessage({ type: "PERFORM_SCAN", data: domData }, (result) => {
         if (chrome.runtime.lastError) {
             console.error("[Sentinel] Messaging error:", chrome.runtime.lastError);
-            return;
+            return chrome.runtime.lastError;
         }
 
         if (result && result.error) {
