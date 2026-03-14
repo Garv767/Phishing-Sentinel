@@ -187,7 +187,7 @@ func handleRegister(c *gin.Context) {
 func main() {
 
 	// Load .env for LOCAL only
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load("../.env"); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
 
