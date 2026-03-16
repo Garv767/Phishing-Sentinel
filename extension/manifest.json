@@ -10,11 +10,9 @@
     "notifications"
   ],
   "host_permissions": [
-    "https://*/*",
-    "http://127.0.0.1:8080/*",
+    "https://phishing-sentinel-api-service.onrender.com/*",
     "http://phishing-sentinel.onrender.com/*",
-    "https://phishing-sentinel.netlify.app/*",
-    "http://localhost:8080/*"
+    "https://phishing-sentinel.netlify.app/*"
   ],
   "action": {
     "default_popup": "src/popup/index.html"

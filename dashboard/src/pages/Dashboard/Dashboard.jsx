@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, CheckCircle, Activity, Globe, Lock, LogOut, RefreshCw } from 'lucide-react';
 import './Dashboard.css';
+import CONFIG from '../../config';
 
-const API_BASE = import.meta.env.VITE_API_URL;//"https://phishing-sentinel.onrender.com";
+const API_BASE = CONFIG.API_BASE_URL;
 const SENTINEL_EXT_ID = "jlhddlkhohfggefbglbheonnaclgipei";// "YOUR_EXTENSION_ID_HERE"; 
 
 

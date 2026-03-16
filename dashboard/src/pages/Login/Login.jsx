@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Mail, ShieldCheck, Loader2 } from 'lucide-react';
 import Demo from "../../components/Demo/Demo";
+import CONFIG from '../../config';
+
+const API_BASE = CONFIG.API_BASE_URL;
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +20,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await fetch('https://phishing-sentinel.onrender.com/login', {
+      const response = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -31,7 +34,7 @@ const Login = () => {
     // Get your Extension ID from chrome://extensions
     const SENTINEL_EXT_ID = "jlhddlkhohfggefbglbheonnaclgipei";// "YOUR_EXTENSION_ID_HERE"; 
 
-    if (window.chrome && chrome.runtime) {
+    if(typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage){ //if (window.chrome && chrome.runtime) {
         chrome.runtime.sendMessage(SENTINEL_EXT_ID, {
             type: "SYNC_TOKEN",
             token: data.token
@@ -39,9 +42,11 @@ const Login = () => {
             if (chrome.runtime.lastError) {
                 console.warn("Extension not found or not linked.");
             } else {
-                console.log("Token successfully handed to extension.");
+                //console.log("Token successfully handed to extension.");
             }
         });
+    } else {
+        console.warn("Chrome Extension API not detected. Make sure the extension is installed.");
     }
         
         navigate('/dashboard');

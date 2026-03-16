@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Mail, ShieldCheck, Loader2, UserPlus } from 'lucide-react';
+import CONFIG from '../../config';
 
+const API_BASE = CONFIG.API_BASE_URL;
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,7 +20,7 @@ const Register = () => {
     setError('');
 
     try {
-      const response = await fetch('https://phishing-sentinel.onrender.com/register', {
+      const response = await fetch(`${API_BASE}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
