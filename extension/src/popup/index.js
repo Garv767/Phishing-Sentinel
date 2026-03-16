@@ -10,7 +10,7 @@ async function updatePopupStats() {
 
   try {
     const response = await fetch(`${API_BASE}/api/stats`, {
-        headers: {
+        headers: {  
             'Authorization': `Bearer ${token}` // ✅ Added JWT
         }
     });
@@ -19,7 +19,7 @@ async function updatePopupStats() {
     const data = await response.json();
     
     scannedEl.textContent = data.scanned.toLocaleString();
-    trustEl.textContent = `${data.trustScore}%`;
+    trustEl.textContent = `${data.trustScore.toFixed(2)}%`;
     statusEl.textContent = "Live";
     statusEl.style.background = "#064e3b";
     statusEl.style.color = "#4ade80";

@@ -44,7 +44,7 @@ func forwardToMLService(data AnalysisRequest) (*AnalysisResponse, error) {
     }
 
     // Assuming your Python FastAPI server runs on port 8000
-    resp, err := http.Post("http://localhost:8000/analyze", "application/json", bytes.NewBuffer(jsonData))
+    resp, err := http.Post("https://phishing-sentinel-ml-service.onrender.com/analyze", "application/json", bytes.NewBuffer(jsonData))
     if err != nil {
         return nil, err
     }

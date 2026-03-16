@@ -6,9 +6,11 @@ import joblib
 import pandas as pd
 import tempfile
 import os
+import time
+from datetime import datetime
 from preprocess import extract_url_features, extract_dom_features
 
-app = FastAPI(title="Phishing Sentinel API")
+app = FastAPI(title="Phishing Sentinel API V2")
 
 # Allow your browser extension to communicate with this API
 app.add_middleware(
@@ -19,28 +21,50 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load the model on startup
-print("Loading Phishing Sentinel model...")
-model = joblib.load('../models/phishing_sentinel_model.pkl')
-print("Model loaded successfully!")
+# --- MODEL LOADING LOGIC (Fixed for Render) ---
+# This ensures the model is found regardless of where the script is called from
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Moves up one level from 'src' then into 'models'
+MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'phishing_sentinel_model_v2.pkl')
 
-# Define the expected JSON payload
+print(f"Loading Phishing Sentinel V2 model from: {MODEL_PATH}")
+
+try:
+    model = joblib.load(MODEL_PATH)
+    print("Model loaded successfully!")
+except FileNotFoundError:
+    print(f"ERROR: Model file not found at {MODEL_PATH}")
+    # Fallback for different directory structures during local testing
+    model = None 
+# ----------------------------------------------
+
 class AnalyzePayload(BaseModel):
     url: str
     html: str
 
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "unix_time": time.time()
+    }
+
 @app.post("/analyze")
 async def analyze_page(payload: AnalyzePayload):
+    if model is None:
+        raise HTTPException(status_code=500, detail="Model not loaded on server")
+        
     if not payload.url or not payload.html:
         raise HTTPException(status_code=400, detail="Missing URL or HTML content")
         
     url = payload.url
     html_content = payload.html
     
-    # 1. Extract URL features
+    # 1. Extract the upgraded URL features
     url_feats = extract_url_features(url)
     
-    # 2. Extract DOM features
+    # 2. Extract the upgraded DOM features
     with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_file:
         temp_file.write(html_content)
         temp_path = temp_file.name
@@ -48,12 +72,14 @@ async def analyze_page(payload: AnalyzePayload):
     dom_feats = extract_dom_features(temp_path, url)
     os.remove(temp_path) 
     
-    # 3. Combine and format
+    # 3. Combine and format matching the exact v2 training sequence
     combined_features = {**url_feats, **dom_feats}
     
     feature_order = [
         'url_length', 'has_ip', 'has_at_symbol', 'num_hyphens', 'num_subdomains',
-        'has_password_field', 'has_hidden_iframe', 'suspicious_form_action', 'script_to_content_ratio'
+        'url_entropy', 'num_digits', 'num_parameters', 'has_sensitive_words',
+        'has_password_field', 'has_hidden_iframe', 'suspicious_form_action', 
+        'script_to_content_ratio', 'external_link_ratio', 'empty_links_ratio', 'num_input_fields'
     ]
     
     df_features = pd.DataFrame([combined_features], columns=feature_order)
@@ -62,8 +88,10 @@ async def analyze_page(payload: AnalyzePayload):
     prediction = model.predict(df_features)[0]
     probability = model.predict_proba(df_features)[0][1] 
     
-    result = "Phishing" if prediction == 1 else "Legitimate"
-    
+    # Custom threshold: Only mark as Phishing if probability > 0.70
+    threshold = 0.70
+    result = "Phishing" if probability >= threshold else "Legitimate"
+        
     return {
         "verdict": result,
         "phishing_probability": round(probability * 100, 2),
@@ -71,5 +99,7 @@ async def analyze_page(payload: AnalyzePayload):
     }
 
 if __name__ == "__main__":
-    # Binds to 0.0.0.0:8000
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # Use Render's PORT environment variable
+    port = int(os.environ.get("PORT", 10000))
+    # 'main' refers to this filename (main.py)
+    uvicorn.run(app, host="0.0.0.0", port=port)

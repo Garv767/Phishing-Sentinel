@@ -26,7 +26,7 @@ async function performSecurityScan() {
     chrome.runtime.sendMessage({ type: "PERFORM_SCAN", data: domData }, (result) => {
         if (chrome.runtime.lastError) {
             console.error("[Sentinel] Messaging error:", chrome.runtime.lastError);
-            return;
+            return chrome.runtime.lastError;
         }
 
         if (result && result.error) {
@@ -64,7 +64,7 @@ function showAlertOverlay(data) {
             
             <div style="text-align: left; background: #1e293b; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #334155;">
                 <p style="margin: 0 0 8px 0;"><strong style="color: #fff;">Threat Level:</strong> <span style="color: #ef4444;">${data.threat_level.toUpperCase()}</span></p>
-                <p style="margin: 0 0 8px 0;"><strong style="color: #fff;">Confidence:</strong> ${(data.confidence_score * 100).toFixed(2)}%</p>
+                <p style="margin: 0 0 8px 0;"><strong style="color: #fff;">Confidence:</strong> ${(data.confidence_score).toFixed(2)}%</p>
                 <p style="margin: 0;"><strong style="color: #fff;">Anomalies:</strong> ${data.detected_anomalies?.join(', ') || 'Structural DNA Mismatch'}</p>
             </div>
             
