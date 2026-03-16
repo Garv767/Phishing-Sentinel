@@ -1,0 +1,13 @@
+* url check from other user
+* model self learning
+* hosting dashboard on netlify 
+hosting api and ml on render, 
+db already setup at supabase
+* logout from extension when logged out from website and vice versa
+* model retrain
+* bussiness model -b2b certification
+cors in go server
+redesign dashboard
+
+
+vpns scan network req but malicous code can be disguised, so we do it at end level
