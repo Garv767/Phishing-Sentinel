@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Sentinel Suite: Phishing Guardian",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Real-time AI-driven visual spoofing detection.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzcfrtf9WpHTQ6Tr97XDutctLsLy3o9a4fRUHYwHszcJBfXFyBuio/wxZLD2zmtSznZ1a8CmsJpLoK+XFx5mkgO2IZXuJySRBj6e9+0KHaKGTuoYVJJ83/gcxKf3aQ73zE41UlmVpmalWXCksD+C1ZCb76iuZbSj7VJBPg+gfl/pBJzzc9RHks9jz/z8/ph+97N+cLHjCdo5CECXpYtxBvppayjhlQMq1n/u4JntlPlmJNjD2c/l5LNHsyso2GU3J7fgngK00lxK8xHUC983PFEzffF8jrEZtbvEj8HWKO/u9FJfNgsh4n/Rwog6uRSqn31olU2oC2UvKXmYpdJSTIQIDAQAB",
   "permissions": [
     "activeTab",
     "storage",
@@ -18,7 +19,10 @@
     "default_popup": "src/popup/index.html"
   },
   "externally_connectable": {
-    "matches": ["https://phishing-sentinel.netlify.app/*"]
+    "matches": [
+      "https://phishing-sentinel.netlify.app/*",
+      "http://localhost:5173/*"
+    ]
   },
   "background": {
     "service_worker": "src/background/index.js",
@@ -27,8 +31,24 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "exclude_matches": [
+        "http://localhost:5173/*",
+        "https://phishing-sentinel.netlify.app/*"
+      ],
       "js": ["src/content/index.js"],
       "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "images/phishingSentinelLogo_16.png",
+    "32": "images/phishingSentinelLogo_32.png",
+    "48": "images/phishingSentinelLogo_48.png",
+    "128": "images/phishingSentinelLogo_128.png"
+  },
+  "web_accessible_resources": [  
+    {
+      "resources": ["images/*"],
+      "matches": ["<all_urls>"] 
     }
   ]
 }
