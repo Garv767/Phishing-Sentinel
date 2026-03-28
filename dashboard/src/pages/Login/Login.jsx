@@ -32,7 +32,7 @@ const Login = () => {
         localStorage.setItem('sentinel_token', data.token);
 
     // Get your Extension ID from chrome://extensions
-    const SENTINEL_EXT_ID = "jlhddlkhohfggefbglbheonnaclgipei";// "YOUR_EXTENSION_ID_HERE"; 
+    const SENTINEL_EXT_ID = "ankdnkinpgjkncgjphbjdpjaallligim";//"jlhddlkhohfggefbglbheonnaclgipei";// "YOUR_EXTENSION_ID_HERE"; 
 
     if(typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage){ //if (window.chrome && chrome.runtime) {
         chrome.runtime.sendMessage(SENTINEL_EXT_ID, {
@@ -42,7 +42,7 @@ const Login = () => {
             if (chrome.runtime.lastError) {
                 console.warn("Extension not found or not linked.");
             } else {
-                //console.log("Token successfully handed to extension.");
+                console.log("Token successfully handed to extension.");
             }
         });
     } else {

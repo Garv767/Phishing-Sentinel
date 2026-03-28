@@ -1,5 +1,5 @@
 // Use HTTPS for Render.com to avoid Mixed Content or connection errors
-const API_ENDPOINT = 'https://phishing-sentinel-api-service.onrender.com/api/analyze'; // Change to your Render URL or localhost for testing
+const API_ENDPOINT = 'https://phishing-sentinel-api-service.onrender.com/api/analyze';
 
 // 1. Listen for Token Sync from Dashboard (External)
 chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {

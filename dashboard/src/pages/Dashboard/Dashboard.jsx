@@ -5,8 +5,7 @@ import './Dashboard.css';
 import CONFIG from '../../config';
 
 const API_BASE = CONFIG.API_BASE_URL;
-const SENTINEL_EXT_ID = "jlhddlkhohfggefbglbheonnaclgipei";// "YOUR_EXTENSION_ID_HERE"; 
-
+const SENTINEL_EXT_ID = "ankdnkinpgjkncgjphbjdpjaallligim";
 
 function Dashboard() {
   const [stats, setStats] = useState({ scanned: 0, threatsBlocked: 0, trustScore: 100 });
@@ -15,25 +14,29 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-   const handleLogout = () => {
+  const handleLogout = () => {
     // Clear token from localStorage
     localStorage.removeItem('sentinel_token');
-    
-    // Send logout message to extension
-    if (window.chrome && chrome.runtime) {
-      chrome.runtime.sendMessage(SENTINEL_EXT_ID, {
-        type: "LOGOUT"
-      }, (response) => {
+
+    const doNavigate = () => navigate('/login');
+
+    // Send logout message to extension, then navigate
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+      // Fallback: navigate after 300ms regardless, in case extension doesn't respond
+      const fallback = setTimeout(doNavigate, 300);
+
+      chrome.runtime.sendMessage(SENTINEL_EXT_ID, { type: "LOGOUT" }, (response) => {
+        clearTimeout(fallback);
         if (chrome.runtime.lastError) {
-          console.warn("Extension not found or not linked.");
+          console.warn("Extension not found or not linked. Logging out anyway.");
         } else {
           console.log("Logout message sent to extension successfully.");
         }
+        doNavigate();
       });
+    } else {
+      doNavigate();
     }
-    
-    // Navigate to login page
-    navigate('/login');
   };
 
   const fetchData = async () => {
