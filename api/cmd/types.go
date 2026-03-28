@@ -62,10 +62,27 @@ func forwardToMLService(data AnalysisRequest) (*AnalysisResponse, error) {
     }
 
     // 3. Translate Python Response -> Go Expected Struct for Database Logging
+    //
+    // Threat level is derived from the model's phishing probability score,
+    // independent of the binary Verdict label:
+    //   < 0.40  → "Low"    (likely legitimate, negligible risk)
+    //   < 0.70  → "Medium" (suspicious, warrants caution)
+    //   >= 0.70 → "High"   (high-confidence phishing, block triggered)
+    threatLevel := func(p float64) string {
+        switch {
+        case p >= 0.70:
+            return "High"
+        case p >= 0.40:
+            return "Medium"
+        default:
+            return "Low"
+        }
+    }(pyResp.PhishingProbability)
+
     result := AnalysisResponse{
         IsSpoof:         pyResp.Verdict == "Phishing",
         ConfidenceScore: pyResp.PhishingProbability,
-        ThreatLevel:     pyResp.Verdict, 
+        ThreatLevel:     threatLevel,
     }
 
     return &result, nil
