@@ -65,14 +65,14 @@ func forwardToMLService(data AnalysisRequest) (*AnalysisResponse, error) {
     //
     // Threat level is derived from the model's phishing probability score,
     // independent of the binary Verdict label:
-    //   < 0.40  → "Low"    (likely legitimate, negligible risk)
-    //   < 0.70  → "Medium" (suspicious, warrants caution)
-    //   >= 0.70 → "High"   (high-confidence phishing, block triggered)
+    //   < 40  → "Low"    (likely legitimate, negligible risk)
+    //   < 70  → "Medium" (suspicious, warrants caution)
+    //   >= 70 → "High"   (high-confidence phishing, block triggered)
     threatLevel := func(p float64) string {
         switch {
-        case p >= 0.70:
+        case p >= 70:
             return "High"
-        case p >= 0.40:
+        case p >= 40:
             return "Medium"
         default:
             return "Low"
