@@ -145,8 +145,8 @@ function Dashboard() {
                     <td className="px-6 py-4 text-slate-500 text-sm">{(event.confidence_score).toFixed(1)}%</td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                        event.threat_level === 'high' ? 'bg-red-400/10 text-red-400' : 
-                        event.threat_level === 'medium' ? 'bg-orange-400/10 text-orange-400' : 'bg-green-400/10 text-green-400'
+                        event.threat_level === 'High' ? 'bg-red-400/10 text-red-400' : 
+                        event.threat_level === 'Medium' ? 'bg-orange-400/10 text-orange-400' : 'bg-green-400/10 text-green-400'
                       }`}>{event.threat_level}</span>
                     </td>
                     <td className="px-6 py-4 text-slate-500 text-xs">{new Date(event.timestamp).toLocaleTimeString()}</td>
