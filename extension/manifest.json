@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Sentinel Suite: Phishing Guardian",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Real-time AI-driven visual spoofing detection.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzcfrtf9WpHTQ6Tr97XDutctLsLy3o9a4fRUHYwHszcJBfXFyBuio/wxZLD2zmtSznZ1a8CmsJpLoK+XFx5mkgO2IZXuJySRBj6e9+0KHaKGTuoYVJJ83/gcxKf3aQ73zE41UlmVpmalWXCksD+C1ZCb76iuZbSj7VJBPg+gfl/pBJzzc9RHks9jz/z8/ph+97N+cLHjCdo5CECXpYtxBvppayjhlQMq1n/u4JntlPlmJNjD2c/l5LNHsyso2GU3J7fgngK00lxK8xHUC983PFEzffF8jrEZtbvEj8HWKO/u9FJfNgsh4n/Rwog6uRSqn31olU2oC2UvKXmYpdJSTIQIDAQAB",
   "permissions": [

@@ -73,10 +73,11 @@ async function handleScan(domData, sendResponse) {
     } catch (error) {
         console.error("[Sentinel Background] Scan Error:", error);
         
-        // Provide specific feedback for Render cold starts or CORS/Network issues
+        // Provide specific feedback mapped to standardized error schemas
+        const errorCode = error.name === 'AbortError' ? 'ERR_NET_002' : 'ERR_NET_001';
         const errorMessage = error.name === 'AbortError' 
-            ? "API Timeout: Server is waking up. Please refresh in 30 seconds."
-            : "API unreachable. Ensure the Go server is live.";
+            ? `[${errorCode}] Deep Scan Timeout. Server is waking up, refresh in 30 seconds.`
+            : `[${errorCode}] API unreachable. Ensure the Sentinel server is live.`;
             
         sendResponse({ error: errorMessage });
     }
