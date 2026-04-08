@@ -3,7 +3,8 @@ const DASHBOARD_URL = "https://phishing-sentinel.netlify.app";
 
 async function updatePopupStats() {
   const tokenObj = await chrome.storage.local.get(['sentinel_token']);
-  const token = tokenObj.sentinel_token;
+  // Clean token of any potential accidental quotes from manual/sync issues
+  const token = tokenObj.sentinel_token ? tokenObj.sentinel_token.replace(/^"|"$/g, '').trim() : '';
 
   const statusEl = document.getElementById('conn-status');
   const scannedEl = document.getElementById('scanned-count');
@@ -15,6 +16,17 @@ async function updatePopupStats() {
             'Authorization': `Bearer ${token}`
         }
     });
+
+    if (response.status === 401) {
+        statusEl.innerHTML = `UNAUTHORIZED <br/><span style="font-size: 8px; color: #94a3b8">Session Expired or Invalid</span>`;
+        statusEl.style.background = "#450a0a";
+        statusEl.style.color = "#f87171";
+        statusEl.style.borderColor = "#991b1b";
+        scannedEl.textContent = "—";
+        trustEl.textContent = "—";
+        return;
+    }
+
     if (!response.ok) throw new Error();
 
     const data = await response.json();
