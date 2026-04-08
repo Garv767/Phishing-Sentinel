@@ -1,25 +1,36 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail, ShieldCheck, Loader2, UserPlus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import ThemeToggle from '../../components/ThemeToggle';
+import ErrorAlert from '../../components/ErrorAlert';
 import CONFIG from '../../config';
 
 const API_BASE = CONFIG.API_BASE_URL;
+
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null); // Structured error mapping
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) return setError("Passwords do not match");
+    if (password !== confirmPassword) {
+      return setError({
+        code: 'ERR_VAL_001',
+        message: 'Input Security Keys do not match.'
+      });
+    }
     
     setLoading(true);
-    setError('');
+    setError(null);
 
     try {
+      /**
+       * Attempt operative registration in Sentinel Core API
+       */
       const response = await fetch(`${API_BASE}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,83 +40,104 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Redirect to login after successful registration
+        // Success: transition back to login stream
         navigate('/login');
       } else {
-        setError(data.error || 'Registration failed');
+        // API Rejected
+        setError({
+          code: 'ERR_AUTH_002',
+          message: data.error || 'Server rejected operative induction request.'
+        });
       }
     } catch (err) {
-      setError('Sentinel Server is offline.');
+      // Network Fault
+      setError({
+        code: 'ERR_NET_001',
+        message: 'Cannot reach the Sentinel Core network.'
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
-        <div className="flex flex-col items-center mb-8">
-          <div className="p-3 bg-cyan-500/10 rounded-xl mb-4">
-            <UserPlus className="w-10 h-10 text-cyan-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-100">SENTINEL <span className="text-cyan-400">JOIN</span></h1>
-          <p className="text-slate-400 text-sm mt-2">Create your defense operative account</p>
+    <div className="min-h-screen flex bg-white text-black dark:bg-[#050505] dark:text-white transition-colors duration-300">
+      
+      {/* Left Side Branding */}
+      <div className="hidden lg:flex flex-col flex-1 p-12 border-r dark:border-[#222] border-[#e5e5e5] justify-between relative overflow-hidden bg-gray-50 dark:bg-[#0a0a0a]">
+        <div>
+          <div className="w-12 h-12 bg-black dark:bg-white mb-8"></div>
+          <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-4">Sentinel</h1>
+          <h2 className="text-xl md:text-2xl font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Operative Induction</h2>
+        </div>
+        <div className="flex gap-4">
+          <div className="w-1 h-1 bg-black dark:bg-white"></div>
+          <div className="w-4 h-1 bg-black dark:bg-white"></div>
+          <div className="w-full h-1 bg-black dark:bg-white max-w-xs"></div>
+        </div>
+      </div>
+
+      {/* Right Side Form */}
+      <div className="flex-1 flex flex-col justify-center p-8 md:p-16 relative">
+        <div className="absolute top-8 right-8">
+          <ThemeToggle />
         </div>
 
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
+        <div className="max-w-md w-full mx-auto">
+          <div className="mb-12">
+            <h2 className="text-4xl font-black uppercase tracking-tight mb-2">Request Access</h2>
+            <p className="text-sm font-bold uppercase tracking-widest text-gray-500">Create operative profile</p>
+          </div>
+
+          <form onSubmit={handleRegister} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-gray-500 block">Operative Email</label>
               <input 
                 type="email" required
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-slate-200 focus:ring-2 focus:ring-cyan-500/50 outline-none"
+                className="w-full bg-transparent border-b-2 border-black dark:border-white py-3 px-0 text-xl font-bold focus:outline-none focus:border-green-500 transition-colors uppercase placeholder:normal-case placeholder:text-sm placeholder:text-gray-300 dark:placeholder:text-gray-700"
                 placeholder="sentinel@defense.io"
                 value={email} onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-gray-500 block mt-8">Create Key</label>
               <input 
                 type="password" required
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-slate-200 focus:ring-2 focus:ring-cyan-500/50 outline-none"
+                className="w-full bg-transparent border-b-2 border-black dark:border-white py-3 px-0 text-xl font-bold focus:outline-none focus:border-green-500 transition-colors"
                 placeholder="••••••••"
                 value={password} onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300">Confirm Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-gray-500 block mt-8">Confirm Key</label>
               <input 
                 type="password" required
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-slate-200 focus:ring-2 focus:ring-cyan-500/50 outline-none"
+                className="w-full bg-transparent border-b-2 border-black dark:border-white py-3 px-0 text-xl font-bold focus:outline-none focus:border-green-500 transition-colors"
                 placeholder="••••••••"
                 value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
+
+            <ErrorAlert error={error} />
+
+            <button 
+              type="submit" disabled={loading}
+              className="w-full border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black py-4 font-black uppercase tracking-widest transition-all mt-8 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
+            </button>
+          </form>
+
+          <div className="mt-12 flex flex-col gap-4 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <Link to="/login" className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-2">
+              <div className="w-2 h-2 bg-gray-400 group-hover:bg-black dark:group-hover:bg-white transition-colors"></div> Return to Login
+            </Link>
           </div>
-
-          {error && <div className="text-red-400 text-xs text-center p-2 bg-red-500/10 rounded-lg">{error}</div>}
-
-          <button 
-            type="submit" disabled={loading}
-            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
-          </button>
-        </form>
-
-        <p className="text-center text-slate-500 text-sm mt-6">
-          Already have an account? <Link to="/login" className="text-cyan-400 hover:underline">Log In</Link>
-        </p>
+        </div>
       </div>
+
     </div>
   );
 };
