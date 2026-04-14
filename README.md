@@ -11,6 +11,7 @@
 
 > Real-time, intent-based zero-day phishing detection powered by a hybrid ML ensemble and a distributed microservices architecture.
 
+
 Phishing Sentinel protects users from sophisticated phishing attacks by analyzing the **structural DNA** of a webpage (DOM) and its **lexical identity** (URL) simultaneously — catching malicious pages before they're ever reported to a blocklist.
 
 ---
