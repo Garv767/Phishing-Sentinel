@@ -16,6 +16,8 @@ function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('sentinel_token');
+    localStorage.removeItem('sentinel_user_id');
+    window.sentinel = null;
     const doNavigate = () => navigate('/login');
 
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
@@ -31,17 +33,22 @@ function Dashboard() {
 
   const fetchData = async () => {
     const token = localStorage.getItem('sentinel_token');
+    
     try {
       /**
        * Primary telemetry polling loop
        * Retrieves global dashboard statistics and recent security logs
        */
+      const headers = { 
+        'Authorization': `Bearer ${token}` 
+      };
+
       const [statsRes, logsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/stats`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_BASE}/api/logs`, { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${API_BASE}/api/stats`, { headers }),
+        fetch(`${API_BASE}/api/logs`, { headers })
       ]);
 
-      if (statsRes.status === 401 || logsRes.status === 401) {
+      if (statsRes.status === 401 || logsRes.status === 401 || statsRes.status === 403 || logsRes.status === 403) {
         handleLogout(); 
         return;
       }
@@ -62,6 +69,15 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem('sentinel_token');
+    if (token && !window.sentinel && window.SentinelSDK) {
+      window.sentinel = new window.SentinelSDK({
+        endpoint: CONFIG.SENTINEL_ENDPOINT,
+        apiKey: CONFIG.SENTINEL_API_KEY,
+        userId: localStorage.getItem('sentinel_user_id') || 'authenticated_user',
+        sessionId: token
+      });
+    }
     fetchData();
     const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
