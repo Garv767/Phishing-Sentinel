@@ -5,6 +5,8 @@ import Demo from "../../components/Demo/Demo";
 import ThemeToggle from '../../components/ThemeToggle';
 import ErrorAlert from '../../components/ErrorAlert';
 import CONFIG from '../../config';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
+import SentinelSDK from '../../sentinel-sdk/sentinel-sdk.js';
 
 const API_BASE = CONFIG.API_BASE_URL;
 
@@ -17,60 +19,100 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-    try {
-      /**
-       * Authenticate Operative against core Sentinel cluster
-       */
-      const response = await fetch(`${API_BASE}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+  try {
+    // Generate browser fingerprint
+    const fp = await FingerprintJS.load();
+    const result = await fp.get();
+
+    const visitorId = result.visitorId;
+
+    console.log("[Sentinel] Visitor ID:", visitorId);
+
+    /**
+     * Authenticate Operative against core Sentinel cluster
+     */
+    const response = await fetch(`${API_BASE}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        visitorId
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Persist secure token locally
+      localStorage.setItem('sentinel_token', data.token);
+      localStorage.setItem('sentinel_user_id', email);
+
+      // Store fingerprint locally (optional)
+      localStorage.setItem('visitor_id', visitorId);
+
+      // Initialize Sentinel SDK and bind to global window
+      window.sentinel = new SentinelSDK({
+        endpoint: CONFIG.SENTINEL_ENDPOINT,
+        apiKey: CONFIG.SENTINEL_API_KEY,
+        userId: email,
+        sessionId: data.token
       });
 
-      const data = await response.json();
+      // Broadcast token to the Chrome Extension namespace
+      const SENTINEL_EXT_ID = "ankdnkinpgjkncgjphbjdpjaallligim";
 
-      if (response.ok) {
-        // Persist secure token locally
-        localStorage.setItem('sentinel_token', data.token);
-
-        // Broadcast token to the Chrome Extension namespace for cross-communication
-        const SENTINEL_EXT_ID = "ankdnkinpgjkncgjphbjdpjaallligim";
-
-        if(typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage){
-            chrome.runtime.sendMessage(SENTINEL_EXT_ID, {
-                type: "SYNC_TOKEN",
-                token: data.token
-            }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.warn("[Sentinel] Extension sync failed. Verify installation.");
-                } else {
-                    console.info("[Sentinel] Secure token synchronized to extension layer.");
-                }
-            });
-        }
-        
-        navigate('/dashboard');
-      } else {
-        // Handle rejected authentication
-        setError({
-          code: 'ERR_AUTH_001',
-          message: data.error || 'Authentication sequence rejected. Invalid credentials.'
-        });
+      if (
+        typeof chrome !== 'undefined' &&
+        chrome.runtime &&
+        chrome.runtime.sendMessage
+      ) {
+        chrome.runtime.sendMessage(
+          SENTINEL_EXT_ID,
+          {
+            type: "SYNC_TOKEN",
+            token: data.token
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              console.warn(
+                "[Sentinel] Extension sync failed. Verify installation."
+              );
+            } else {
+              console.info(
+                "[Sentinel] Secure token synchronized to extension layer."
+              );
+            }
+          }
+        );
       }
-    } catch (err) {
-      // Handle network or server offline disruptions
+
+      navigate('/dashboard');
+    } else {
       setError({
-        code: 'ERR_NET_001',
-        message: 'Unable to reach the Sentinel cluster network.'
+        code: 'ERR_AUTH_001',
+        message:
+          data.error ||
+          'Authentication sequence rejected. Invalid credentials.'
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    console.error(err);
+
+    setError({
+      code: 'ERR_NET_001',
+      message: 'Unable to reach the Sentinel cluster network.'
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>
