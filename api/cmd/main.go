@@ -120,8 +120,9 @@ func handleAnalyze(c *gin.Context) {
 
 func handleLogin(c *gin.Context) {
 	var loginReq struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+		VisitorID string `json:"visitorId"`
 	}
 
 	if err := c.ShouldBindJSON(&loginReq); err != nil {
@@ -138,6 +139,14 @@ func handleLogin(c *gin.Context) {
 	if user.Password != loginReq.Password {
 		c.JSON(401, gin.H{"error": "Wrong password"})
 		return
+	}
+
+	// Update the user's visitor ID in the database if it has changed or is new
+	if loginReq.VisitorID != "" && user.VisitorID != loginReq.VisitorID {
+		user.VisitorID = loginReq.VisitorID
+		if err := db.Save(&user).Error; err != nil {
+			log.Printf("[Warning] Failed to update visitor ID for user %d: %v", user.ID, err)
+		}
 	}
 
 	expirationTime := time.Now().Add(24 * time.Hour)
@@ -222,7 +231,7 @@ func main() {
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Sentinel-Telemetry")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -239,10 +248,12 @@ func main() {
 	// Public routes
 	r.POST("/login", handleLogin)
 	r.POST("/register", handleRegister)
+	r.POST("/webhooks/sentinel", HandleSentinelWebhook)
 
 	// Protected routes
 	api := r.Group("/api")
 	api.Use(AuthMiddleware())
+	api.Use(SentinelGuard())
 	{
 		api.GET("/stats", handleStats)
 		api.POST("/analyze", handleAnalyze)
