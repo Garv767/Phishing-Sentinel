@@ -102,7 +102,7 @@ func SentinelGuard() gin.HandlerFunc {
 		// 7. Call Sentinel API
 		sentinelURL := os.Getenv("SENTINEL_API_URL")
 		if sentinelURL == "" {
-			sentinelURL = "http://localhost:3001/evaluate"
+			sentinelURL = "https://api.sentinellayer.in/evaluate"
 		} else {
 			if !strings.HasPrefix(sentinelURL, "http://") && !strings.HasPrefix(sentinelURL, "https://") {
 				sentinelURL = "https://" + sentinelURL

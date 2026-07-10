@@ -245,9 +245,9 @@ func main() {
         c.JSON(200, gin.H{"status": "ok"})
     })
     
-	// Public routes
-	r.POST("/login", handleLogin)
-	r.POST("/register", handleRegister)
+	// Public routes - Protected by Sentinel for telemetry collection
+	r.POST("/login", SentinelGuard(), handleLogin)
+	r.POST("/register", SentinelGuard(), handleRegister)
 	r.POST("/webhooks/sentinel", HandleSentinelWebhook)
 
 	// Protected routes
